@@ -10,7 +10,7 @@ import sys
 
 from jobs_radar.config import load_settings
 from jobs_radar.delivery.email import send_digest
-from jobs_radar.pipeline import run
+from jobs_radar.pipeline import mark_jobs_seen, run
 
 
 def main() -> None:
@@ -33,6 +33,11 @@ def main() -> None:
         default=None,
         help="Override max age in hours (default: from config)",
     )
+    fetch_parser.add_argument(
+        "--no-mark-seen",
+        action="store_true",
+        help="Don't mark jobs as seen after delivery (useful for testing)",
+    )
 
     args = parser.parse_args()
 
@@ -49,7 +54,7 @@ def main() -> None:
         jobs = asyncio.run(run(settings))
 
         if not jobs:
-            print("\nNo matching jobs found. Try widening your filters or adding more companies.")
+            print("\nNo new matching jobs. Already seen jobs are skipped.")
             return
 
         print(f"\nTop results:")
@@ -60,6 +65,11 @@ def main() -> None:
         if not args.no_email:
             print()
             send_digest(jobs, settings)
+
+        # Mark as seen so we don't re-send in the next run
+        if not args.no_mark_seen:
+            mark_jobs_seen([j.id for j in jobs])
+            print(f"Marked {len(jobs)} job(s) as seen.")
 
 
 if __name__ == "__main__":

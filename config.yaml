@@ -30,10 +30,12 @@ companies:
     - anthropic
     - stripe
     - figma
-    # openai and notion don't use Greenhouse — add to correct source in Phase 2
-  lever: []
-  ashby: []
+  ashby:
+    - linear
+    - retool
+    - arbiter-ai
   workable: []
+  lever: []  # Lever v0 public API appears deprecated — slugs return 404
 
 filters:
   max_age_hours: 24

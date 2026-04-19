@@ -1,24 +1,53 @@
-"""Pipeline: fetch → filter → score → deliver."""
+"""Pipeline: fetch → filter → score → persist → deliver."""
 
+import sqlite3
 from datetime import datetime, timedelta, timezone
 
 from jobs_radar.config import Settings
+from jobs_radar.db import get_connection, init_db, is_seen, mark_seen, save_job
 from jobs_radar.models import Job
 from jobs_radar.scoring.keyword import score_job
-from jobs_radar.sources import greenhouse
+from jobs_radar.sources import ashby, greenhouse, lever, workable
 
 
-async def fetch_greenhouse(settings: Settings) -> list[Job]:
-    """Fetch jobs from all configured Greenhouse companies."""
+async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Job]:
+    """Fetch jobs from all company slugs for a given source.
+
+    Errors from individual companies are caught so one bad slug doesn't
+    abort the entire run — same pattern you'd use in PHP with try/catch
+    inside a foreach.
+    """
     all_jobs: list[Job] = []
-    for slug in settings.companies.greenhouse:
+    for slug in slugs:
+        if not slug:
+            continue
         try:
-            jobs = await greenhouse.fetch_jobs(slug)
+            jobs = await fetch_fn(slug)
             all_jobs.extend(jobs)
-            print(f"  [{slug}] fetched {len(jobs)} jobs")
+            print(f"  [{source_name}/{slug}] fetched {len(jobs)} jobs")
         except Exception as e:
-            # One company failing shouldn't break the whole run
-            print(f"  [{slug}] error: {e}")
+            print(f"  [{source_name}/{slug}] error: {e}")
+    return all_jobs
+
+
+async def fetch_all(settings: Settings) -> list[Job]:
+    """Fetch jobs from all configured sources."""
+    all_jobs: list[Job] = []
+
+    sources = [
+        ("greenhouse", greenhouse.fetch_jobs, settings.companies.greenhouse),
+        ("ashby", ashby.fetch_jobs, settings.companies.ashby),
+        ("workable", workable.fetch_jobs, settings.companies.workable),
+        ("lever", lever.fetch_jobs, settings.companies.lever),
+    ]
+
+    for name, fetch_fn, slugs in sources:
+        if not slugs:
+            continue
+        print(f"Fetching from {name}...")
+        jobs = await _fetch_source(name, fetch_fn, slugs)
+        all_jobs.extend(jobs)
+
     return all_jobs
 
 
@@ -27,7 +56,6 @@ def filter_recent(jobs: list[Job], max_age_hours: int) -> list[Job]:
     cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
     recent = []
     for job in jobs:
-        # Ensure we compare timezone-aware datetimes
         posted = job.posted_at
         if posted.tzinfo is None:
             posted = posted.replace(tzinfo=timezone.utc)
@@ -39,22 +67,44 @@ def filter_recent(jobs: list[Job], max_age_hours: int) -> list[Job]:
 def score_and_filter(jobs: list[Job], settings: Settings) -> list[Job]:
     """Score jobs by keywords and filter out excluded/low-scoring ones."""
     scored = [score_job(job, settings.keywords) for job in jobs]
-    # Drop excluded jobs (score == -1) and below-threshold jobs
     return [j for j in scored if j.keyword_score >= settings.filters.min_score]
 
 
-async def run(settings: Settings) -> list[Job]:
-    """Run the full pipeline: fetch → filter by age → score → filter by score."""
-    print("Fetching jobs from Greenhouse...")
-    jobs = await fetch_greenhouse(settings)
-    print(f"Total fetched: {len(jobs)}")
+def persist_and_dedup(conn: sqlite3.Connection, jobs: list[Job]) -> list[Job]:
+    """Save new jobs to DB; return only the ones we haven't seen before.
 
-    recent = filter_recent(jobs, settings.filters.max_age_hours)
+    This is the dedup step: jobs already in the DB (same source + external_id)
+    are silently skipped. Only newly inserted jobs make it into the digest.
+    """
+    new_jobs = []
+    for job in jobs:
+        if save_job(conn, job):
+            new_jobs.append(job)
+    return new_jobs
+
+
+async def run(settings: Settings) -> list[Job]:
+    """Full pipeline: fetch → filter → score → dedup → persist."""
+    conn = get_connection()
+    init_db(conn)
+
+    all_jobs = await fetch_all(settings)
+    print(f"Total fetched: {len(all_jobs)}")
+
+    recent = filter_recent(all_jobs, settings.filters.max_age_hours)
     print(f"Posted in last {settings.filters.max_age_hours}h: {len(recent)}")
 
-    results = score_and_filter(recent, settings)
-    print(f"After keyword scoring (min score {settings.filters.min_score}): {len(results)}")
+    scored = score_and_filter(recent, settings)
+    print(f"After keyword scoring (min score {settings.filters.min_score}): {len(scored)}")
 
-    # Sort by score descending
-    results.sort(key=lambda j: j.keyword_score, reverse=True)
-    return results
+    new_jobs = persist_and_dedup(conn, scored)
+    print(f"New (not seen before): {len(new_jobs)}")
+
+    new_jobs.sort(key=lambda j: j.keyword_score, reverse=True)
+    return new_jobs
+
+
+def mark_jobs_seen(job_ids: list[str]) -> None:
+    """Mark jobs as seen after digest is sent."""
+    conn = get_connection()
+    mark_seen(conn, job_ids)

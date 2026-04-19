@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Personal job search tool that surfaces fresh tech job postings, scores them with Claude, and delivers a daily digest."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "pydantic>=2.13.2",
+    "pyyaml>=6.0.3",
+]
 
 [project.scripts]
 jobs-radar = "jobs_radar.cli:main"

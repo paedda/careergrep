@@ -1,0 +1,53 @@
+user:
+  name: Peter Kallai
+  profile_summary: |
+    Senior Software Engineer, 18+ years PHP/Symfony at scale,
+    AWS, distributed systems, recent AI-native work with Claude.
+    Looking for Senior or Staff Backend roles, remote-first, US-based.
+
+keywords:
+  must_have_any:
+    - PHP
+    - Symfony
+    - Senior
+    - Staff
+    - Backend
+  nice_to_have:
+    - Claude
+    - Anthropic
+    - LLM
+    - AI
+    - AWS
+    - Remote
+  exclude:
+    - Junior
+    - Entry level
+    - Intern
+    - ".NET"
+
+companies:
+  greenhouse:
+    - anthropic
+    - stripe
+    - figma
+    # openai and notion don't use Greenhouse — add to correct source in Phase 2
+  lever: []
+  ashby: []
+  workable: []
+
+filters:
+  max_age_hours: 24
+  min_score: 3
+
+delivery:
+  email:
+    enabled: true
+    to: paedda@paedda.com
+    from: paedda@paedda.com
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+
+claude:
+  enabled: false
+  model: claude-sonnet-4-6
+  daily_budget_usd: 2.0

@@ -425,3 +425,17 @@ When Claude Code picks up work on this project:
 - Chrome extension that pulls in job postings from LinkedIn directly
 - Weekly summary: "Here's what the market looked like this week for senior PHP roles"
 - GitHub Action that runs the pipeline on a schedule when deployed
+
+### Multi-user / Public Mode
+
+When opening the tool to other job seekers, these architectural changes are needed:
+
+- **Config → DB**: Move keywords, company lists, and profile summary from `config.yaml` into per-user DB rows
+- **Auth**: Add real authentication — OAuth (Google or GitHub login) is the lowest-friction option for a dev-audience tool; replace the Phase 4 shared-secret approach
+- **Fetching strategy**: Two options:
+  - Per-user company lists (each user picks their own companies to watch)
+  - Shared global fetch + per-user scoring (fetch once, score against each user's keyword profile — more efficient at scale)
+- **Email delivery**: Replace Gmail SMTP with a transactional email provider (Resend, Postmark, or SendGrid)
+- **Scheduling**: Replace launchd with a proper cron/queue on the server side
+
+**Recommendation for Phase 4**: Design the DB schema with a `users` table and FK relationships from the start, but keep the UI single-user for the portfolio. Structurally ready for multi-user without the scope explosion.

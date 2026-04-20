@@ -1,4 +1,4 @@
-# jobs-radar — Project Plan
+# careergrep — Project Plan
 
 A personal job search tool that surfaces genuinely fresh (last 24h) tech job postings from multiple ATS sources, scores them against my profile using Claude, and delivers a daily email digest.
 
@@ -132,7 +132,7 @@ All of these have free, public APIs that do not require authentication for readi
 ## Repo Structure
 
 ```
-jobs-radar/
+careergrep/
 ├── pyproject.toml
 ├── README.md
 ├── PLAN.md                    ← this file
@@ -142,7 +142,7 @@ jobs-radar/
 │
 ├── backend/
 │   ├── src/
-│   │   └── jobs_radar/
+│   │   └── careergrep/
 │   │       ├── __init__.py
 │   │       ├── main.py              # FastAPI app entry
 │   │       ├── config.py            # settings loading
@@ -301,7 +301,7 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 
 ### Phase 0 — Project Setup (30 min)
 - [ ] Initialize repo locally
-- [ ] Create GitHub repo `paedda/jobs-radar` (public)
+- [ ] Create GitHub repo `paedda/careergrep` (public)
 - [ ] `uv init` the backend
 - [ ] Add `README.md`, `PLAN.md`, `.gitignore`, `.env.example`
 - [ ] First commit + push
@@ -315,7 +315,7 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 - [ ] Filter by `posted_at >= now - 24h` and keyword match
 - [ ] Generate a simple HTML email via Jinja2 template
 - [ ] Send via Gmail SMTP using App Password
-- [ ] CLI entry: `uv run jobs-radar fetch --source greenhouse`
+- [ ] CLI entry: `uv run careergrep fetch --source greenhouse`
 
 **Key learning outcomes:**
 - Python project layout with `uv`
@@ -332,7 +332,7 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 - [ ] SQLite schema + SQLAlchemy (or plain sqlite3 to keep it simple)
 - [ ] Dedup: don't alert on jobs we've already seen
 - [ ] Config file (`config.yaml`) loading with Pydantic settings
-- [ ] CLI: `uv run jobs-radar fetch` (all sources, respects config)
+- [ ] CLI: `uv run careergrep fetch` (all sources, respects config)
 
 **Key learning outcomes:**
 - Protocols / abstract base classes in Python
@@ -346,7 +346,7 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 - [ ] Prompt design: take user profile + job → structured JSON output (score, reasoning, red_flags)
 - [ ] Rate limit + budget guard (don't exceed daily_budget_usd)
 - [ ] Only send top-scoring jobs in email digest
-- [ ] CLI: `uv run jobs-radar score`
+- [ ] CLI: `uv run careergrep score`
 
 **Key learning outcomes:**
 - Anthropic Python SDK

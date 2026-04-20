@@ -4,7 +4,7 @@ from datetime import datetime
 
 import httpx
 
-from jobs_radar.models import Job
+from careergrep.models import Job
 
 API_URL = "https://apply.workable.com/api/v3/accounts/{slug}/jobs"
 

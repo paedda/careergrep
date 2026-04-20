@@ -4,8 +4,8 @@ from datetime import datetime
 
 import httpx
 
-from jobs_radar.models import Job
-from jobs_radar.sources.greenhouse import _strip_html  # reuse the HTML stripper
+from careergrep.models import Job
+from careergrep.sources.greenhouse import _strip_html  # reuse the HTML stripper
 
 API_URL = "https://api.ashbyhq.com/posting-api/job-board/{slug}"
 

@@ -1,4 +1,4 @@
-"""Core data models for jobs-radar."""
+"""Core data models for careergrep."""
 
 from datetime import datetime
 from typing import Literal

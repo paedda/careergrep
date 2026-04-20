@@ -3,11 +3,11 @@
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
-from jobs_radar.config import Settings
-from jobs_radar.db import get_connection, init_db, mark_seen, save_job
-from jobs_radar.models import Job
-from jobs_radar.scoring.keyword import score_job
-from jobs_radar.sources import arbeitnow, ashby, greenhouse, lever, themuse, workable
+from careergrep.config import Settings
+from careergrep.db import get_connection, init_db, mark_seen, save_job
+from careergrep.models import Job
+from careergrep.scoring.keyword import score_job
+from careergrep.sources import arbeitnow, ashby, greenhouse, lever, themuse, workable
 
 
 async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Job]:

@@ -1,4 +1,4 @@
-"""SQLite persistence layer for jobs-radar.
+"""SQLite persistence layer for careergrep.
 
 Uses plain sqlite3 (stdlib) rather than SQLAlchemy — the schema is simple
 enough that an ORM adds more complexity than value here.
@@ -12,7 +12,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-from jobs_radar.models import Job
+from careergrep.models import Job
 
 # Default DB path: project root
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent.parent / "jobs.db"

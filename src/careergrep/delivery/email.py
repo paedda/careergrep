@@ -9,8 +9,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from jobs_radar.config import Settings
-from jobs_radar.models import Job
+from careergrep.config import Settings
+from careergrep.models import Job
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -48,7 +48,7 @@ def send_digest(jobs: list[Job], settings: Settings) -> None:
     html_body = render_digest(jobs, settings)
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"jobs-radar: {len(jobs)} job{'s' if len(jobs) != 1 else ''} — {date.today().strftime('%b %d')}"
+    msg["Subject"] = f"careergrep: {len(jobs)} job{'s' if len(jobs) != 1 else ''} — {date.today().strftime('%b %d')}"
     msg["From"] = email_cfg.from_
     msg["To"] = email_cfg.to
     msg.attach(MIMEText(html_body, "html"))

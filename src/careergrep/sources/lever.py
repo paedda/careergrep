@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 
 import httpx
 
-from jobs_radar.models import Job
-from jobs_radar.sources.greenhouse import _strip_html
+from careergrep.models import Job
+from careergrep.sources.greenhouse import _strip_html
 
 API_URL = "https://api.lever.co/v0/postings/{slug}?mode=json"
 

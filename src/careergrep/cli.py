@@ -1,4 +1,4 @@
-"""CLI entry points for jobs-radar.
+"""CLI entry points for careergrep.
 
 Uses argparse from the standard library — no need for Click or Typer yet.
 In PHP you'd use Symfony Console; argparse is Python's built-in equivalent.
@@ -8,11 +8,11 @@ import argparse
 import asyncio
 import sys
 
-from jobs_radar.config import load_settings
-from jobs_radar.db import get_connection, init_db
-from jobs_radar.delivery.email import send_digest
-from jobs_radar.models import Job
-from jobs_radar.pipeline import mark_jobs_seen, run
+from careergrep.config import load_settings
+from careergrep.db import get_connection, init_db
+from careergrep.delivery.email import send_digest
+from careergrep.models import Job
+from careergrep.pipeline import mark_jobs_seen, run
 
 
 def _print_job(job: Job, verbose: bool = False) -> None:
@@ -31,7 +31,7 @@ def _print_job(job: Job, verbose: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="jobs-radar",
+        prog="careergrep",
         description="Surface fresh tech job postings and score them against your profile.",
     )
     subparsers = parser.add_subparsers(dest="command")
@@ -67,7 +67,7 @@ def main() -> None:
 
         if not jobs:
             print("\nNo new matching jobs. Already seen jobs are skipped.")
-            print("Tip: use `uv run jobs-radar list` to browse stored jobs, or --max-age to widen the window.")
+            print("Tip: use `uv run careergrep list` to browse stored jobs, or --max-age to widen the window.")
             return
 
         print(f"\n{len(jobs)} new job(s) found:")
@@ -102,12 +102,12 @@ def main() -> None:
 
         if not rows:
             status_label = "any status" if args.all_statuses else f"status='{args.status}'"
-            print(f"No jobs found ({status_label}). Run `uv run jobs-radar fetch` first.")
+            print(f"No jobs found ({status_label}). Run `uv run careergrep fetch` first.")
             return
 
         print(f"\n{len(rows)} job(s) in DB (status={'any' if args.all_statuses else args.status}):\n")
         import json
-        from jobs_radar.db import _row_to_job
+        from careergrep.db import _row_to_job
         for row in rows:
             job = _row_to_job(row)
             _print_job(job, verbose=args.verbose)

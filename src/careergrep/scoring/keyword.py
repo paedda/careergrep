@@ -2,8 +2,8 @@
 
 import re
 
-from jobs_radar.config import KeywordsConfig
-from jobs_radar.models import Job
+from careergrep.config import KeywordsConfig
+from careergrep.models import Job
 
 
 def _matches_any(text: str, terms: list[str]) -> list[str]:

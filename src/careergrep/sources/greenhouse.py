@@ -6,7 +6,7 @@ from datetime import datetime
 
 import httpx
 
-from jobs_radar.models import Job
+from careergrep.models import Job
 
 # Greenhouse returns all jobs at once — no pagination needed for board API
 API_URL = "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"

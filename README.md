@@ -1,21 +1,20 @@
-# jobs-radar
+# careergrep
 
-A personal job search tool that surfaces genuinely fresh (last 24h) tech job postings from multiple ATS sources, scores them against my profile using Claude, and delivers a daily email digest.
+A personal job search tool that surfaces genuinely fresh (last 24h) tech job postings from multiple ATS sources and discovery aggregators, scores them against your profile by keyword, and delivers a daily email digest.
 
 Built as both a practical tool for an active job search and a portfolio project demonstrating Python, FastAPI, TypeScript/React, and AI-native development.
 
 ## Tech Stack
 
-- **Backend:** Python 3.12+, FastAPI, Pydantic, SQLite, httpx, Anthropic SDK
-- **Frontend:** Vite + React + TypeScript + Tailwind CSS
-- **Data Sources:** Greenhouse, Ashby, Workable, Lever (public APIs)
+- **Backend:** Python 3.12+, Pydantic, SQLite, httpx, Anthropic SDK
+- **Data Sources:** Greenhouse, Ashby, Workable, Lever (watch list) + Arbeitnow (discovery)
 
 ## Getting Started
 
 ```bash
 # Clone the repo
-git clone https://github.com/paedda/jobs-radar.git
-cd jobs-radar
+git clone https://github.com/paedda/careergrep.git
+cd careergrep
 
 # Set up Python environment
 uv sync
@@ -28,7 +27,7 @@ cp .env.example .env
 cp config.yaml.example config.yaml  # (or edit config.yaml directly)
 
 # Run the pipeline
-uv run jobs-radar fetch
+uv run careergrep fetch
 ```
 
 ## Usage
@@ -37,43 +36,43 @@ uv run jobs-radar fetch
 
 ```bash
 # Normal daily run — fetches, scores, sends email digest
-uv run jobs-radar fetch
+uv run careergrep fetch
 
 # Skip email, print results to terminal
-uv run jobs-radar fetch --no-email
+uv run careergrep fetch --no-email
 
 # Show location, posted date, and description snippet
-uv run jobs-radar fetch --no-email --verbose
+uv run careergrep fetch --no-email --verbose
 
 # Widen the time window (useful on weekends or for testing)
-uv run jobs-radar fetch --no-email --max-age 72
+uv run careergrep fetch --no-email --max-age 72
 
 # Fetch without marking jobs as seen (safe for testing)
-uv run jobs-radar fetch --no-email --no-mark-seen
+uv run careergrep fetch --no-email --no-mark-seen
 
 # Show more than the default 10 results
-uv run jobs-radar fetch --no-email --limit 25
+uv run careergrep fetch --no-email --limit 25
 ```
 
 ### Browse stored jobs
 
 ```bash
 # List new jobs already in the DB
-uv run jobs-radar list
+uv run careergrep list
 
 # Show with details (location, date, description snippet)
-uv run jobs-radar list --verbose
+uv run careergrep list --verbose
 
 # Filter by status: new, seen, applied, not_interested
-uv run jobs-radar list --status seen
+uv run careergrep list --status seen
 
 # Show all jobs regardless of status
-uv run jobs-radar list --all-statuses
+uv run careergrep list --all-statuses
 ```
 
 ## Configuration
 
-Edit `config.yaml` to set your profile, target companies, and keyword filters:
+Edit `config.yaml` to set your profile, discovery preferences, and keyword filters:
 
 ```yaml
 user:
@@ -86,9 +85,16 @@ keywords:
   nice_to_have: [Remote, AI, AWS]
   exclude: [Junior, Intern]
 
+# Discovery: keyword-based search across aggregators (no company list needed)
+discovery:
+  enabled: true
+  sources:
+    - arbeitnow   # Remote jobs worldwide
+
+# Optional watch list: specific companies to always monitor
 companies:
-  greenhouse: [anthropic, stripe, figma]
-  ashby: [linear, arbiter-ai]
+  greenhouse: [anthropic, stripe]
+  ashby: [linear]
   workable: []
   lever: []
 ```
@@ -107,7 +113,7 @@ Under active development. See [PLAN.md](PLAN.md) for the full roadmap.
 
 - [x] Phase 0 — Project setup
 - [x] Phase 1 — Greenhouse fetch + keyword scoring + email digest
-- [x] Phase 2 — Multi-source (Ashby, Workable, Lever) + SQLite + dedup
+- [x] Phase 2 — Multi-source (Ashby, Workable, Lever, Arbeitnow) + SQLite + dedup + discovery
 - [ ] Phase 3 — Claude scoring
 - [ ] Phase 4 — FastAPI + React/TS frontend
 - [ ] Phase 5 — Scheduling + polish

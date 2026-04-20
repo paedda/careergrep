@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from jobs_radar.models import Job
+from careergrep.models import Job
 
 
 class JobSource(Protocol):

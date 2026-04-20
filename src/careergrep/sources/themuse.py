@@ -8,8 +8,8 @@ from datetime import datetime
 
 import httpx
 
-from jobs_radar.models import Job
-from jobs_radar.sources.greenhouse import _strip_html
+from careergrep.models import Job
+from careergrep.sources.greenhouse import _strip_html
 
 API_URL = "https://www.themuse.com/api/public/jobs"
 

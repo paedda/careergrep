@@ -11,7 +11,7 @@ class Job(BaseModel):
     """A normalized job posting from any ATS source."""
 
     id: str = Field(default_factory=lambda: str(uuid4()))
-    source: Literal["greenhouse", "lever", "ashby", "workable"]
+    source: Literal["greenhouse", "lever", "ashby", "workable", "themuse", "arbeitnow"]
     external_id: str
     company: str
     title: str

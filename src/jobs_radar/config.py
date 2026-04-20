@@ -43,6 +43,13 @@ class ClaudeConfig(BaseModel):
     daily_budget_usd: float = 2.0
 
 
+class DiscoveryConfig(BaseModel):
+    enabled: bool = True
+    sources: list[str] = ["themuse", "arbeitnow"]
+    # Max pages to fetch per source (each page ~20 jobs for Muse, ~100 for Arbeitnow)
+    max_pages: int = 5
+
+
 class DeliveryConfig(BaseModel):
     email: EmailConfig = EmailConfig()
 
@@ -51,6 +58,7 @@ class Settings(BaseModel):
     user: UserConfig
     keywords: KeywordsConfig = KeywordsConfig()
     companies: CompaniesConfig = CompaniesConfig()
+    discovery: DiscoveryConfig = DiscoveryConfig()
     filters: FiltersConfig = FiltersConfig()
     delivery: DeliveryConfig = DeliveryConfig()
     claude: ClaudeConfig = ClaudeConfig()

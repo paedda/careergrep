@@ -4,10 +4,10 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 
 from jobs_radar.config import Settings
-from jobs_radar.db import get_connection, init_db, is_seen, mark_seen, save_job
+from jobs_radar.db import get_connection, init_db, mark_seen, save_job
 from jobs_radar.models import Job
 from jobs_radar.scoring.keyword import score_job
-from jobs_radar.sources import ashby, greenhouse, lever, workable
+from jobs_radar.sources import arbeitnow, ashby, greenhouse, lever, themuse, workable
 
 
 async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Job]:
@@ -31,7 +31,7 @@ async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Jo
 
 
 async def fetch_all(settings: Settings) -> list[Job]:
-    """Fetch jobs from all configured sources."""
+    """Fetch jobs from all configured company-slug sources (optional watch list)."""
     all_jobs: list[Job] = []
 
     sources = [
@@ -47,6 +47,37 @@ async def fetch_all(settings: Settings) -> list[Job]:
         print(f"Fetching from {name}...")
         jobs = await _fetch_source(name, fetch_fn, slugs)
         all_jobs.extend(jobs)
+
+    return all_jobs
+
+
+async def fetch_discovery(settings: Settings) -> list[Job]:
+    """Fetch jobs via keyword-based discovery sources (no company list needed)."""
+    if not settings.discovery.enabled:
+        return []
+
+    all_jobs: list[Job] = []
+
+    if "themuse" in settings.discovery.sources:
+        print("Fetching from The Muse (Senior/Staff Software Engineers)...")
+        try:
+            jobs = await themuse.fetch_jobs(
+                keywords=settings.keywords.must_have_any,
+                max_pages=settings.discovery.max_pages,
+            )
+            print(f"  [themuse] fetched {len(jobs)} jobs")
+            all_jobs.extend(jobs)
+        except Exception as e:
+            print(f"  [themuse] error: {e}")
+
+    if "arbeitnow" in settings.discovery.sources:
+        print("Fetching from Arbeitnow (remote jobs)...")
+        try:
+            jobs = await arbeitnow.fetch_jobs()
+            print(f"  [arbeitnow] fetched {len(jobs)} jobs")
+            all_jobs.extend(jobs)
+        except Exception as e:
+            print(f"  [arbeitnow] error: {e}")
 
     return all_jobs
 
@@ -71,11 +102,7 @@ def score_and_filter(jobs: list[Job], settings: Settings) -> list[Job]:
 
 
 def persist_and_dedup(conn: sqlite3.Connection, jobs: list[Job]) -> list[Job]:
-    """Save new jobs to DB; return only the ones we haven't seen before.
-
-    This is the dedup step: jobs already in the DB (same source + external_id)
-    are silently skipped. Only newly inserted jobs make it into the digest.
-    """
+    """Save new jobs to DB; return only the ones we haven't seen before."""
     new_jobs = []
     for job in jobs:
         if save_job(conn, job):
@@ -88,8 +115,11 @@ async def run(settings: Settings) -> list[Job]:
     conn = get_connection()
     init_db(conn)
 
-    all_jobs = await fetch_all(settings)
-    print(f"Total fetched: {len(all_jobs)}")
+    # Fetch from both company watch list and discovery sources
+    company_jobs = await fetch_all(settings)
+    discovery_jobs = await fetch_discovery(settings)
+    all_jobs = company_jobs + discovery_jobs
+    print(f"Total fetched: {len(all_jobs)} ({len(company_jobs)} from watch list, {len(discovery_jobs)} from discovery)")
 
     recent = filter_recent(all_jobs, settings.filters.max_age_hours)
     print(f"Posted in last {settings.filters.max_age_hours}h: {len(recent)}")

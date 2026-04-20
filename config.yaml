@@ -25,6 +25,16 @@ keywords:
     - Intern
     - ".NET"
 
+# Discovery: keyword-based search across aggregators (no company list needed)
+discovery:
+  enabled: true
+  sources:
+    - arbeitnow   # Remote jobs worldwide, no auth required, fresh data
+    # - themuse   # Disabled: The Muse free API returns mostly stale (2021) data
+  max_pages: 5    # Pages per source (~20 jobs/page for Muse, ~100 for Arbeitnow)
+
+# Optional watch list: specific companies you always want to monitor
+# These are fetched in addition to discovery results
 companies:
   greenhouse:
     - anthropic

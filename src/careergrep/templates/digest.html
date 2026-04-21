@@ -12,8 +12,11 @@
     .job-title a { color: #1a56db; text-decoration: none; }
     .job-title a:hover { text-decoration: underline; }
     .job-company { font-size: 14px; color: #444; margin: 0 0 6px 0; }
-    .job-details { font-size: 13px; color: #666; margin: 0; }
-    .job-score { display: inline-block; background: #e8f4e8; color: #2d6a2d; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .job-details { font-size: 13px; color: #666; margin: 0 0 8px 0; }
+    .job-reasoning { font-size: 13px; color: #444; margin: 8px 0 0 0; line-height: 1.5; }
+    .job-flags { font-size: 12px; color: #b45309; margin: 6px 0 0 0; }
+    .score-kw { display: inline-block; background: #e8f4e8; color: #2d6a2d; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .score-claude { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
     .empty { color: #888; font-style: italic; padding: 20px 0; }
     .footer { margin-top: 32px; font-size: 12px; color: #999; border-top: 1px solid #e5e5e5; padding-top: 12px; }
   </style>
@@ -22,34 +25,35 @@
   <h1>careergrep daily digest</h1>
   <p class="meta">{{ date }} &middot; {{ total }} matching job{{ "s" if total != 1 else "" }} found</p>
 
-  {% if us_jobs %}
-  <h2>US / Remote ({{ us_jobs | length }})</h2>
-  {% for job in us_jobs %}
+  {% macro job_card(job) %}
   <div class="job">
     <p class="job-title"><a href="{{ job.url }}">{{ job.title }}</a></p>
     <p class="job-company">{{ job.company }}{% if job.location %} &middot; {{ job.location }}{% endif %}</p>
     <p class="job-details">
-      <span class="job-score">Score: {{ job.keyword_score }}</span>
+      <span class="score-kw">kw: {{ job.keyword_score }}</span>
+      {% if job.claude_score is not none %}
+      <span class="score-claude">★ {{ job.claude_score }}/10</span>
+      {% endif %}
       &middot; Posted {{ job.posted_at.strftime('%b %d') }}
       &middot; via {{ job.source }}
     </p>
+    {% if job.claude_reasoning %}
+    <p class="job-reasoning">{{ job.claude_reasoning }}</p>
+    {% endif %}
+    {% if job.claude_red_flags %}
+    <p class="job-flags">⚠ {{ job.claude_red_flags | join(' &middot; ') }}</p>
+    {% endif %}
   </div>
-  {% endfor %}
+  {% endmacro %}
+
+  {% if us_jobs %}
+  <h2>US / Remote ({{ us_jobs | length }})</h2>
+  {% for job in us_jobs %}{{ job_card(job) }}{% endfor %}
   {% endif %}
 
   {% if intl_jobs %}
   <h2>International ({{ intl_jobs | length }})</h2>
-  {% for job in intl_jobs %}
-  <div class="job">
-    <p class="job-title"><a href="{{ job.url }}">{{ job.title }}</a></p>
-    <p class="job-company">{{ job.company }}{% if job.location %} &middot; {{ job.location }}{% endif %}</p>
-    <p class="job-details">
-      <span class="job-score">Score: {{ job.keyword_score }}</span>
-      &middot; Posted {{ job.posted_at.strftime('%b %d') }}
-      &middot; via {{ job.source }}
-    </p>
-  </div>
-  {% endfor %}
+  {% for job in intl_jobs %}{{ job_card(job) }}{% endfor %}
   {% endif %}
 
   {% if not us_jobs and not intl_jobs %}

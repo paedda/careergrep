@@ -8,6 +8,10 @@ import argparse
 import asyncio
 import sys
 
+from dotenv import load_dotenv
+
+load_dotenv()  # loads .env from project root before anything else reads os.environ
+
 from careergrep.config import load_settings
 from careergrep.db import get_connection, init_db
 from careergrep.delivery.email import send_digest
@@ -19,10 +23,15 @@ def _print_job(job: Job, verbose: bool = False) -> None:
     """Print a single job to stdout."""
     remote_tag = " [remote]" if job.remote else ""
     location = f" | {job.location}" if job.location else ""
-    print(f"  [{job.keyword_score:2d}] {job.title} @ {job.company}{remote_tag}")
+    claude_tag = f" ★{job.claude_score}/10" if job.claude_score is not None else ""
+    print(f"  [kw:{job.keyword_score:2d}{claude_tag}] {job.title} @ {job.company}{remote_tag}")
     if verbose:
         print(f"       Posted: {job.posted_at.strftime('%Y-%m-%d')} via {job.source}{location}")
-        if job.description_text:
+        if job.claude_reasoning:
+            print(f"       Claude: {job.claude_reasoning}")
+        if job.claude_red_flags:
+            print(f"       ⚠ {' | '.join(job.claude_red_flags)}")
+        elif job.description_text:
             snippet = job.description_text[:160].replace("\n", " ")
             print(f"       {snippet}...")
     print(f"       {job.url}")

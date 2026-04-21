@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from careergrep.config import Settings
 from careergrep.db import get_connection, init_db, mark_seen, save_job
 from careergrep.models import Job
+from careergrep.scoring.claude_scorer import score_jobs_with_claude
 from careergrep.scoring.keyword import score_job
 from careergrep.sources import arbeitnow, ashby, greenhouse, lever, remoteok, themuse, workable
 
@@ -154,10 +155,13 @@ async def run(settings: Settings) -> list[Job]:
     scored = score_and_filter(recent, settings)
     print(f"After keyword scoring (min score {settings.filters.min_score}): {len(scored)}")
 
+    scored = score_jobs_with_claude(scored, settings)
+
     new_jobs = persist_and_dedup(conn, scored)
     print(f"New (not seen before): {len(new_jobs)}")
 
-    new_jobs.sort(key=lambda j: j.keyword_score, reverse=True)
+    # Sort by Claude score when available, fall back to keyword score
+    new_jobs.sort(key=lambda j: (j.claude_score or 0, j.keyword_score), reverse=True)
     return new_jobs
 
 

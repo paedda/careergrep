@@ -65,6 +65,6 @@ delivery:
     smtp_port: 587
 
 claude:
-  enabled: false
+  enabled: true
   model: claude-sonnet-4-6
   daily_budget_usd: 2.0

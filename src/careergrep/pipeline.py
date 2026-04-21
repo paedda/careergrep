@@ -7,7 +7,7 @@ from careergrep.config import Settings
 from careergrep.db import get_connection, init_db, mark_seen, save_job
 from careergrep.models import Job
 from careergrep.scoring.keyword import score_job
-from careergrep.sources import arbeitnow, ashby, greenhouse, lever, themuse, workable
+from careergrep.sources import arbeitnow, ashby, greenhouse, lever, remoteok, themuse, workable
 
 
 async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Job]:
@@ -79,6 +79,15 @@ async def fetch_discovery(settings: Settings) -> list[Job]:
         except Exception as e:
             print(f"  [arbeitnow] error: {e}")
 
+    if "remoteok" in settings.discovery.sources:
+        print("Fetching from RemoteOK (PHP/Symfony remote jobs)...")
+        try:
+            jobs = await remoteok.fetch_jobs()
+            print(f"  [remoteok] fetched {len(jobs)} jobs")
+            all_jobs.extend(jobs)
+        except Exception as e:
+            print(f"  [remoteok] error: {e}")
+
     return all_jobs
 
 
@@ -96,9 +105,27 @@ def filter_recent(jobs: list[Job], max_age_hours: int) -> list[Job]:
 
 
 def score_and_filter(jobs: list[Job], settings: Settings) -> list[Job]:
-    """Score jobs by keywords and filter out excluded/low-scoring ones."""
+    """Score jobs by keywords and filter out excluded/low-scoring ones.
+
+    Two-stage filter:
+    1. must_have_any is a hard requirement — at least one term must appear
+       anywhere in the job text, regardless of score.
+    2. keyword_score must meet min_score threshold.
+
+    This prevents nice_to_have accumulation (AI + AWS + Remote) from passing
+    jobs that never mention PHP or Symfony.
+    """
     scored = [score_job(job, settings.keywords) for job in jobs]
-    return [j for j in scored if j.keyword_score >= settings.filters.min_score]
+    result = []
+    for j in scored:
+        if j.keyword_score < settings.filters.min_score:
+            continue
+        # Hard check: must_have_any must actually appear somewhere
+        searchable = f"{j.title} {j.description_text}".lower()
+        if not any(term.lower() in searchable for term in settings.keywords.must_have_any):
+            continue
+        result.append(j)
+    return result
 
 
 def persist_and_dedup(conn: sqlite3.Connection, jobs: list[Job]) -> list[Job]:

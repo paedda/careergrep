@@ -11,7 +11,7 @@ class Job(BaseModel):
     """A normalized job posting from any ATS source."""
 
     id: str = Field(default_factory=lambda: str(uuid4()))
-    source: Literal["greenhouse", "lever", "ashby", "workable", "themuse", "arbeitnow"]
+    source: Literal["greenhouse", "lever", "ashby", "workable", "themuse", "arbeitnow", "remoteok"]
     external_id: str
     company: str
     title: str
@@ -41,7 +41,7 @@ class Job(BaseModel):
         location explicitly mentions the US.
         """
         if self.source != "arbeitnow":
-            return True
+            return True  # watch list sources + remoteok are US
 
         if not self.location:
             return False  # arbeitnow jobs without location are typically EU

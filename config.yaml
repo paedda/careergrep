@@ -34,6 +34,7 @@ discovery:
   enabled: true
   sources:
     - arbeitnow   # Remote jobs worldwide, no auth required, fresh data
+    - remoteok    # US remote PHP/Symfony jobs, no auth required
     # - themuse   # Disabled: The Muse free API returns mostly stale (2021) data
   max_pages: 5    # Pages per source (~20 jobs/page for Muse, ~100 for Arbeitnow)
 

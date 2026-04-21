@@ -9,16 +9,20 @@ keywords:
   must_have_any:
     - PHP
     - Symfony
+  nice_to_have:
     - Senior
     - Staff
     - Backend
-  nice_to_have:
     - Claude
     - Anthropic
     - LLM
     - AI
     - AWS
     - Remote
+    - OpenSearch
+    - Elasticsearch
+    - Microservices
+    - Docker
   exclude:
     - Junior
     - Entry level

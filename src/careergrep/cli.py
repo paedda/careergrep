@@ -29,6 +29,28 @@ def _print_job(job: Job, verbose: bool = False) -> None:
     print()
 
 
+def _print_jobs_grouped(jobs: list[Job], verbose: bool = False, limit: int | None = None) -> None:
+    """Print jobs grouped into US/Remote and International sections."""
+    us_jobs = [j for j in jobs if j.is_us_job()]
+    intl_jobs = [j for j in jobs if not j.is_us_job()]
+
+    if us_jobs:
+        print(f"\n--- US / Remote ({len(us_jobs)}) ---\n")
+        shown = us_jobs[:limit] if limit else us_jobs
+        for job in shown:
+            _print_job(job, verbose=verbose)
+        if limit and len(us_jobs) > limit:
+            print(f"  ... and {len(us_jobs) - limit} more US jobs.\n")
+
+    if intl_jobs:
+        print(f"\n--- International ({len(intl_jobs)}) ---\n")
+        shown = intl_jobs[:limit] if limit else intl_jobs
+        for job in shown:
+            _print_job(job, verbose=verbose)
+        if limit and len(intl_jobs) > limit:
+            print(f"  ... and {len(intl_jobs) - limit} more international jobs.\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="careergrep",
@@ -71,11 +93,7 @@ def main() -> None:
             return
 
         print(f"\n{len(jobs)} new job(s) found:")
-        for job in jobs[:args.limit]:
-            _print_job(job, verbose=args.verbose)
-
-        if len(jobs) > args.limit:
-            print(f"  ... and {len(jobs) - args.limit} more. Use --limit to see more.\n")
+        _print_jobs_grouped(jobs, verbose=args.verbose, limit=args.limit)
 
         if not args.no_email:
             send_digest(jobs, settings)
@@ -105,12 +123,10 @@ def main() -> None:
             print(f"No jobs found ({status_label}). Run `uv run careergrep fetch` first.")
             return
 
-        print(f"\n{len(rows)} job(s) in DB (status={'any' if args.all_statuses else args.status}):\n")
-        import json
+        print(f"\n{len(rows)} job(s) in DB (status={'any' if args.all_statuses else args.status}):")
         from careergrep.db import _row_to_job
-        for row in rows:
-            job = _row_to_job(row)
-            _print_job(job, verbose=args.verbose)
+        all_jobs = [_row_to_job(row) for row in rows]
+        _print_jobs_grouped(all_jobs, verbose=args.verbose)
 
 
 if __name__ == "__main__":

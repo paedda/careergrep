@@ -19,8 +19,12 @@ def render_digest(jobs: list[Job], settings: Settings) -> str:
     """Render the HTML email digest from the Jinja2 template."""
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
     template = env.get_template("digest.html")
+    us_jobs = [j for j in jobs if j.is_us_job()]
+    intl_jobs = [j for j in jobs if not j.is_us_job()]
     return template.render(
-        jobs=jobs,
+        us_jobs=us_jobs,
+        intl_jobs=intl_jobs,
+        total=len(jobs),
         date=date.today().strftime("%A, %B %d, %Y"),
         max_age_hours=settings.filters.max_age_hours,
     )

@@ -4,6 +4,10 @@ A personal job search tool that surfaces genuinely fresh (last 24h) tech job pos
 
 Built as both a practical tool for an active job search and a portfolio project demonstrating Python, FastAPI, TypeScript/React, and AI-native development.
 
+## Screenshots
+
+![Job list view](docs/screenshots/listview.png)
+
 ## Tech Stack
 
 - **Backend:** Python 3.12+, Pydantic, SQLite, httpx, Anthropic SDK
@@ -114,7 +118,7 @@ Under active development. See [PLAN.md](PLAN.md) for the full roadmap.
 - [x] Phase 0 — Project setup
 - [x] Phase 1 — Greenhouse fetch + keyword scoring + email digest
 - [x] Phase 2 — Multi-source (Ashby, Workable, Lever, Arbeitnow) + SQLite + dedup + discovery
-- [ ] Phase 3 — Claude scoring
+- [x] Phase 3 — Claude scoring
 - [ ] Phase 4 — FastAPI + React/TS frontend
 - [ ] Phase 5 — Scheduling + polish
 - [ ] Phase 6 — Deployment

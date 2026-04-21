@@ -300,22 +300,22 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 ## Phases (Build Order)
 
 ### Phase 0 — Project Setup (30 min)
-- [ ] Initialize repo locally
-- [ ] Create GitHub repo `paedda/careergrep` (public)
-- [ ] `uv init` the backend
-- [ ] Add `README.md`, `PLAN.md`, `.gitignore`, `.env.example`
-- [ ] First commit + push
-- [ ] Confirm local Python 3.12+ is working
+- [x] Initialize repo locally
+- [x] Create GitHub repo `paedda/careergrep` (public)
+- [x] `uv init` the backend
+- [x] Add `README.md`, `PLAN.md`, `.gitignore`, `.env.example`
+- [x] First commit + push
+- [x] Confirm local Python 3.12+ is working
 
 ### Phase 1 — MVP: Fetch + Email (2–3 hours)
 **Goal:** End of this phase, running one command produces an email in my inbox with fresh jobs from Greenhouse.
 
-- [ ] Define `Job` Pydantic model
-- [ ] Implement `GreenhouseSource` that fetches jobs for a company slug
-- [ ] Filter by `posted_at >= now - 24h` and keyword match
-- [ ] Generate a simple HTML email via Jinja2 template
-- [ ] Send via Gmail SMTP using App Password
-- [ ] CLI entry: `uv run careergrep fetch --source greenhouse`
+- [x] Define `Job` Pydantic model
+- [x] Implement `GreenhouseSource` that fetches jobs for a company slug
+- [x] Filter by `posted_at >= now - 24h` and keyword match
+- [x] Generate a simple HTML email via Jinja2 template
+- [x] Send via Gmail SMTP using App Password
+- [x] CLI entry: `uv run careergrep fetch --source greenhouse`
 
 **Key learning outcomes:**
 - Python project layout with `uv`
@@ -327,12 +327,12 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 ### Phase 2 — Multi-Source + Storage (2–3 hours)
 **Goal:** Works across all four ATS sources, persists jobs, doesn't re-notify about the same job.
 
-- [ ] Add Lever, Ashby, Workable sources
-- [ ] Factor out common `JobSource` base class/protocol
-- [ ] SQLite schema + SQLAlchemy (or plain sqlite3 to keep it simple)
-- [ ] Dedup: don't alert on jobs we've already seen
-- [ ] Config file (`config.yaml`) loading with Pydantic settings
-- [ ] CLI: `uv run careergrep fetch` (all sources, respects config)
+- [x] Add Lever, Ashby, Workable sources
+- [x] Factor out common `JobSource` base class/protocol
+- [x] SQLite schema + SQLAlchemy (or plain sqlite3 to keep it simple)
+- [x] Dedup: don't alert on jobs we've already seen
+- [x] Config file (`config.yaml`) loading with Pydantic settings
+- [x] CLI: `uv run careergrep fetch` (all sources, respects config)
 
 **Key learning outcomes:**
 - Protocols / abstract base classes in Python
@@ -342,11 +342,11 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 ### Phase 3 — Claude Scoring (1–2 hours)
 **Goal:** Each new job gets a 1–10 fit score from Claude with a 1-sentence rationale.
 
-- [ ] Anthropic SDK integration
-- [ ] Prompt design: take user profile + job → structured JSON output (score, reasoning, red_flags)
-- [ ] Rate limit + budget guard (don't exceed daily_budget_usd)
-- [ ] Only send top-scoring jobs in email digest
-- [ ] CLI: `uv run careergrep score`
+- [x] Anthropic SDK integration
+- [x] Prompt design: take user profile + job → structured JSON output (score, reasoning, red_flags)
+- [x] Rate limit + budget guard (don't exceed daily_budget_usd)
+- [x] Only send top-scoring jobs in email digest
+- [x] CLI: `uv run careergrep score`
 
 **Key learning outcomes:**
 - Anthropic Python SDK

@@ -134,6 +134,65 @@ def get_unseen_jobs(
     return [_row_to_job(row) for row in rows]
 
 
+def list_jobs(
+    conn: sqlite3.Connection,
+    status: str | None = None,
+    min_score: int = 0,
+    source: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> list[Job]:
+    """Fetch jobs with optional filters — used by the API."""
+    query = "SELECT * FROM jobs WHERE keyword_score >= ?"
+    params: list[int | str] = [min_score]
+
+    if status:
+        query += " AND status = ?"
+        params.append(status)
+    if source:
+        query += " AND source = ?"
+        params.append(source)
+
+    query += " ORDER BY claude_score DESC NULLS LAST, keyword_score DESC, posted_at DESC"
+    query += " LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+
+    rows = conn.execute(query, params).fetchall()
+    return [_row_to_job(row) for row in rows]
+
+
+def get_job(conn: sqlite3.Connection, job_id: str) -> Job | None:
+    """Fetch a single job by ID."""
+    row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+    return _row_to_job(row) if row else None
+
+
+def update_job(
+    conn: sqlite3.Connection,
+    job_id: str,
+    status: str | None = None,
+    notes: str | None = None,
+) -> Job | None:
+    """Update status and/or notes on a job. Returns the updated job or None if not found."""
+    fields: list[str] = []
+    params: list[str] = []
+
+    if status is not None:
+        fields.append("status = ?")
+        params.append(status)
+    if notes is not None:
+        fields.append("notes = ?")
+        params.append(notes)
+
+    if not fields:
+        return get_job(conn, job_id)
+
+    params.append(job_id)
+    conn.execute(f"UPDATE jobs SET {', '.join(fields)} WHERE id = ?", params)
+    conn.commit()
+    return get_job(conn, job_id)
+
+
 def mark_seen(conn: sqlite3.Connection, job_ids: list[str]) -> None:
     """Mark jobs as 'seen' after they've been included in a digest."""
     conn.executemany(

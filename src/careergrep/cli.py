@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()  # loads .env from project root before anything else reads os.environ
 
 from careergrep.config import load_settings
+from careergrep.log import setup_logging
 from careergrep.db import get_connection, init_db
 from careergrep.delivery.email import send_digest
 from careergrep.models import Job
@@ -65,6 +66,7 @@ def main() -> None:
         prog="careergrep",
         description="Surface fresh tech job postings and score them against your profile.",
     )
+    parser.add_argument("--plain-logs", action="store_true", help="Human-readable logs instead of JSON")
     subparsers = parser.add_subparsers(dest="command")
 
     # fetch command
@@ -83,6 +85,8 @@ def main() -> None:
     list_parser.add_argument("--limit", type=int, default=20, help="Max results to show (default: 20)")
 
     args = parser.parse_args()
+
+    setup_logging(json=not args.plain_logs)
 
     if args.command is None:
         parser.print_help()

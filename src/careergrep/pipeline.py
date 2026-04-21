@@ -5,10 +5,13 @@ from datetime import datetime, timedelta, timezone
 
 from careergrep.config import Settings
 from careergrep.db import get_connection, init_db, mark_seen, save_job
+from careergrep.log import get_logger
 from careergrep.models import Job
 from careergrep.scoring.claude_scorer import score_jobs_with_claude
 from careergrep.scoring.keyword import score_job
 from careergrep.sources import arbeitnow, ashby, greenhouse, lever, remoteok, themuse, workable
+
+logger = get_logger(__name__)
 
 
 async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Job]:
@@ -25,9 +28,9 @@ async def _fetch_source(source_name: str, fetch_fn, slugs: list[str]) -> list[Jo
         try:
             jobs = await fetch_fn(slug)
             all_jobs.extend(jobs)
-            print(f"  [{source_name}/{slug}] fetched {len(jobs)} jobs")
+            logger.info("source fetched", extra={"source": source_name, "slug": slug, "count": len(jobs)})
         except Exception as e:
-            print(f"  [{source_name}/{slug}] error: {e}")
+            logger.error("source error", extra={"source": source_name, "slug": slug, "error": str(e)})
     return all_jobs
 
 
@@ -45,7 +48,7 @@ async def fetch_all(settings: Settings) -> list[Job]:
     for name, fetch_fn, slugs in sources:
         if not slugs:
             continue
-        print(f"Fetching from {name}...")
+        logger.info("fetching watch list source", extra={"source": name})
         jobs = await _fetch_source(name, fetch_fn, slugs)
         all_jobs.extend(jobs)
 
@@ -60,34 +63,34 @@ async def fetch_discovery(settings: Settings) -> list[Job]:
     all_jobs: list[Job] = []
 
     if "themuse" in settings.discovery.sources:
-        print("Fetching from The Muse (Senior/Staff Software Engineers)...")
+        logger.info("fetching discovery source", extra={"source": "themuse"})
         try:
             jobs = await themuse.fetch_jobs(
                 keywords=settings.keywords.must_have_any,
                 max_pages=settings.discovery.max_pages,
             )
-            print(f"  [themuse] fetched {len(jobs)} jobs")
+            logger.info("source fetched", extra={"source": "themuse", "count": len(jobs)})
             all_jobs.extend(jobs)
         except Exception as e:
-            print(f"  [themuse] error: {e}")
+            logger.error("source error", extra={"source": "themuse", "error": str(e)})
 
     if "arbeitnow" in settings.discovery.sources:
-        print("Fetching from Arbeitnow (remote jobs)...")
+        logger.info("fetching discovery source", extra={"source": "arbeitnow"})
         try:
             jobs = await arbeitnow.fetch_jobs()
-            print(f"  [arbeitnow] fetched {len(jobs)} jobs")
+            logger.info("source fetched", extra={"source": "arbeitnow", "count": len(jobs)})
             all_jobs.extend(jobs)
         except Exception as e:
-            print(f"  [arbeitnow] error: {e}")
+            logger.error("source error", extra={"source": "arbeitnow", "error": str(e)})
 
     if "remoteok" in settings.discovery.sources:
-        print("Fetching from RemoteOK (PHP/Symfony remote jobs)...")
+        logger.info("fetching discovery source", extra={"source": "remoteok"})
         try:
             jobs = await remoteok.fetch_jobs()
-            print(f"  [remoteok] fetched {len(jobs)} jobs")
+            logger.info("source fetched", extra={"source": "remoteok", "count": len(jobs)})
             all_jobs.extend(jobs)
         except Exception as e:
-            print(f"  [remoteok] error: {e}")
+            logger.error("source error", extra={"source": "remoteok", "error": str(e)})
 
     return all_jobs
 
@@ -143,24 +146,28 @@ async def run(settings: Settings) -> list[Job]:
     conn = get_connection()
     init_db(conn)
 
-    # Fetch from both company watch list and discovery sources
+    logger.info("pipeline started")
+
     company_jobs = await fetch_all(settings)
     discovery_jobs = await fetch_discovery(settings)
     all_jobs = company_jobs + discovery_jobs
-    print(f"Total fetched: {len(all_jobs)} ({len(company_jobs)} from watch list, {len(discovery_jobs)} from discovery)")
+    logger.info("fetch complete", extra={
+        "total": len(all_jobs),
+        "watch_list": len(company_jobs),
+        "discovery": len(discovery_jobs),
+    })
 
     recent = filter_recent(all_jobs, settings.filters.max_age_hours)
-    print(f"Posted in last {settings.filters.max_age_hours}h: {len(recent)}")
+    logger.info("after time filter", extra={"count": len(recent), "max_age_hours": settings.filters.max_age_hours})
 
     scored = score_and_filter(recent, settings)
-    print(f"After keyword scoring (min score {settings.filters.min_score}): {len(scored)}")
+    logger.info("after keyword filter", extra={"count": len(scored), "min_score": settings.filters.min_score})
 
     scored = score_jobs_with_claude(scored, settings)
 
     new_jobs = persist_and_dedup(conn, scored)
-    print(f"New (not seen before): {len(new_jobs)}")
+    logger.info("pipeline complete", extra={"new_jobs": len(new_jobs)})
 
-    # Sort by Claude score when available, fall back to keyword score
     new_jobs.sort(key=lambda j: (j.claude_score or 0, j.keyword_score), reverse=True)
     return new_jobs
 

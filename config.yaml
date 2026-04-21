@@ -9,10 +9,10 @@ keywords:
   must_have_any:
     - PHP
     - Symfony
-  nice_to_have:
     - Senior
     - Staff
     - Backend
+  nice_to_have:
     - Claude
     - Anthropic
     - LLM
@@ -66,5 +66,5 @@ delivery:
 
 claude:
   enabled: true
-  model: claude-sonnet-4-6
-  daily_budget_usd: 2.0
+  model: claude-haiku-4-5-20251001
+  daily_budget_usd: 0.50

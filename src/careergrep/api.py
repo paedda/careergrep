@@ -7,6 +7,9 @@ update jobs without touching the DB directly.
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
+from careergrep.log import setup_logging
+
+setup_logging()
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 

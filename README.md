@@ -119,7 +119,7 @@ Under active development. See [PLAN.md](PLAN.md) for the full roadmap.
 - [x] Phase 1 — Greenhouse fetch + keyword scoring + email digest
 - [x] Phase 2 — Multi-source (Ashby, Workable, Lever, Arbeitnow) + SQLite + dedup + discovery
 - [x] Phase 3 — Claude scoring
-- [ ] Phase 4 — FastAPI + React/TS frontend
+- [x] Phase 4 — FastAPI + React/TS frontend
 - [ ] Phase 5 — Scheduling + polish
 - [ ] Phase 6 — Deployment
 

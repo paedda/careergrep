@@ -357,17 +357,17 @@ Secrets (SMTP password, Anthropic key) via `.env`, never committed.
 **Goal:** Browse jobs in a clean UI. Mark as applied. Filter and sort.
 
 **Backend additions:**
-- [ ] FastAPI app with CORS for local dev
-- [ ] `GET /api/jobs` with filters (score, source, status, age)
-- [ ] `PATCH /api/jobs/{id}` for status changes + notes
-- [ ] `POST /api/pipeline/run` to manually trigger a fetch
+- [x] FastAPI app with CORS for local dev
+- [x] `GET /api/jobs` with filters (score, source, status, age)
+- [x] `PATCH /api/jobs/{id}` for status changes + notes
+- [x] `POST /api/pipeline/run` to manually trigger a fetch
 - [ ] Basic auth (shared secret via env var — it's only me)
 
 **Frontend:**
-- [ ] Vite + React + TS + Tailwind setup
-- [ ] Job list with filters
-- [ ] Job detail with description, Claude's reasoning, red flags
-- [ ] Mark as applied / not interested
+- [x] Vite + React + TS + Tailwind setup
+- [x] Job list with filters
+- [x] Job detail with description, Claude's reasoning, red flags
+- [x] Mark as applied / not interested
 - [ ] Simple dashboard stats (X new today, Y applied this week)
 
 **Key learning outcomes:**

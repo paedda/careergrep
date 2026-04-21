@@ -60,7 +60,7 @@ src/careergrep/
 - [x] Phase 1 — Greenhouse fetch + keyword scoring + email digest
 - [x] Phase 2 — Multi-source (Ashby, Workable, Lever, Arbeitnow) + SQLite + dedup + discovery
 - [ ] Phase 3 — Claude scoring (Anthropic SDK, structured output)
-- [ ] Phase 4 — FastAPI backend + React/TS frontend
+- [x] Phase 4 — FastAPI backend + React/TS frontend
 - [ ] Phase 5 — Scheduling (launchd) + polish
 - [ ] Phase 6 — Deployment (Fly.io / Vercel, optional)
 
